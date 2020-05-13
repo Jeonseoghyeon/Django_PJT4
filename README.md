@@ -124,23 +124,26 @@
      from django.contrib import admin
      from django.urls import path, include
      from . import views
-
-
-     app_name = 'accounts'
-
-     urlpatterns = [
-         path('',views.index,name='index'),
-         path('signup/',views.signup,name='signup'),
-         path('login/',views.login,name='login'),
-         path('logout/',views.logout,name='logout'),
-         path('<username>/', views.profile, name='profile'),
-         path('<username>/follow', views.follow, name='follow'),
-         ]
-
      ```
 
-     views 내 함수를 불러오기 위한 url들은 다음과 같다.
 
+```
+ app_name = 'accounts'
+
+ urlpatterns = [
+     path('',views.index,name='index'),
+     path('signup/',views.signup,name='signup'),
+     path('login/',views.login,name='login'),
+     path('logout/',views.logout,name='logout'),
+     path('<username>/', views.profile, name='profile'),
+     path('<username>/follow', views.follow, name='follow'),
+     ]
+
+```
+
+ views 내 함수를 불러오기 위한 url들은 다음과 같다.
+
+```
   4. `views.py`
 
      - signup 기능
@@ -165,7 +168,7 @@
                'form' : form
            }
            return render(request,'accounts/form.html',context)
-       ```
+```
 
      - login 기능
 
@@ -287,9 +290,9 @@
        {% endblock %}
        ```
 
-  ## movies
+#### 2.  `movies` 앱 구현
 
-  #### models.py
+1. `models.py`
 
   models.py에는 총 3개의 모델을 구현하였으며
 
@@ -299,15 +302,15 @@
 
   (review rank)
 
-  #### forms.py
+2. `forms.py`
 
   forms.py에서는 입력 폼을 거의 바꾸지 않고 `models`에서 그대로 가져왔으며 필요한 `fields`만 적절히 수정하였다. (추후에 reviewform rank넣는거 수정 예정)
 
-  #### views.py
+3. `views.py`
 
   views.py 내부에 정의된 함수는 아래와 같다.
 
-  ```markdown
+```markdown
   index(request)
   create_movie(request) @login_required
   create_review(request, movie_id) @login_required
@@ -317,16 +320,21 @@
   create_comment(request, review_id) @login_required @require_POST
   ~~delete_comment(request, comment_id)~~ -- 미구현
   like_review(request, review_id) @login_required
-  ```
+```
 
   `create_movie` 함수에는 함수를 호출한 user가 superuser인지 판단하는 is_superuser함수를 넣었다. 또한 사용자에게서 imagefile을 입력받아 서버 내 media 폴더에 저장하였다. accounts의 user model도 사용자에게서 imagefile을 받아 같은 media 폴더에 넣는 구조라 폴더의 구분이 필요해보였다.
 
-  #### templates
+4. Templates
 
   모든 탬플릿들은 bootstrap을 이용해 블럭 바깥을 container로 감싸놓았으며 form.html은 bootstrap4를 사용하여 깔끔한 입력 form을 사용자에게 제공할 수 있다.
 
 
+
 ### 2. 어려웠던 점 및 배운 점
+
+#### accounts 앱
+
+---
 
 - bootstrap 적용을 처음해 봤는데, 적용 절차가 어려웠다. 배우게 된 점은 다음과 같다.
 
@@ -418,33 +426,34 @@
        ```
 
     3. html 페이지에서 if문을 써줘서 처리해주는게 좋을지__(해결 아직 못함)
+
        - 비어있는지 확인하려고 {% if profile_user.profile_picture == Null %} 라고 썼는데 작동을 안해서, 어떻게 고치면 좋을지
 
 
 
-  ## movies
+#### movies 앱
 
-  #### models.py -- 관계 구현하기
+----
+
+- models.py -- 관계 구현하기
 
   user와 review의 m:n 관계를 구현하며 테이블의 충돌을 경험하였다. 예전에 homework와 quiz로도 나왔던 내용이였지만 당시에는 m:n의 관계를 정확하게 이해하고 있지 못했기 때문에 이번에도 똑같은 실수를 하였다.
 
-  ```python
+```python
   # movies.models.Review
   like_users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='like_reviews')
 
   # accounts.models.User
   like_reviews = models.ManyToManyField(Review, related_name='like_users')
-  ```
+```
 
   처음에는 User에서 m:n으로 생성된 테이블과 Review에서 m:n으로 생성된 테이블이 만나기 위해서는 related_name이 서로 맞물려 있어야 한다고 생각했으며 위와 같이 코드를 작성했지만 충돌이 일어났다. m:n의 개념과 ManyToManyField의 사용법을 좀 더 공부한 뒤에야 m:n을 확실히 이해하게 되었다.
 
-
-
-  #### views.py
+- views.py
 
   create_review 함수를 구현하는 과정에서 오류가 발생하였다.
 
-  ```python
+```python
   def create_review(request, movie_id):
       movie = get_object_or_404(Movie, id=movie_id)
       if request.method == "POST":
@@ -455,55 +464,40 @@
               form.user = request.user
               form.save()
               return redirect('movies:index')
-  ```
+```
 
   처음에는 위와 같은 방식으로 코드를 구성하였고 오류가 나게 되었다.
 
   POST로 받아온 form에 그대로 추가값을 저장하면서 발생하게 된 오류이며 아래의 코드로 변경하여 오류를 잡았다.
 
-  ```python
+```python
   review = form.save(commit=False)
   review.movie = movie
   review.user = request.user
   review.save()
   return redirect('movies:index')
-  ```
+```
 
   아마도 .save()함수는 form이 메타정보로 가지고있는 원본 model에 입력받은 data를 집어넣어 return값으로 반환하는 기능을 하는것 같다. 그렇기에 form에 직접 추가값을 저장하였을때는 코드가 작동하지 않았지만 form.save()를 review에 할당하여 값을 저장할때는 제대로 동작 했던 것으로 추측한다.
 
-  ```python
+```python
   class ReviewForm(forms.ModelForm):
       class Meta:
           model = Review
           fields = ['title', 'content', 'rank',]
-  ```
+```
 
   ++ 아니면 form 과 form.save()의 반환값 모두 같은 type이지만 form의 fields가 `__all__`이 아니라서 작동을 제대로 하지 않은것인가도 의심된다.
-
-
-
-  #### imagefile 삽입과정 전반
-
-  저번주 pjt였던 versus 를 만들면서 imagefile을 서버에 저장하고 보여주는 전 구현과정은 한번 경험해보았지만 setting, urls, views, form.html 등등에 다양한 추가코드를 넣어줘야 하기때문에 이전 작성코드를 참고하지 않고서는 그 기능을 구현하기가 매우 힘들었다.
-
-
 
 
 
 ### 3. 추후 보완해낼 점
 
 - 회원가입 시 Image 등록하지 않은 사람 Image 추가하기
-- Login 기능을 bootstrap Modal을 이용해서 구현할 예정~
+- Login 기능을 bootstrap Modal을 이용해서 구현할 예정
 
-  #### models.py, forms.py
+- Review에서 rank를 입력받을때 현재는 사용자가 직접 int값을 입력하는 형태를 하고있지만 1차적으로 1~10까지의 점수를 사용자가 선택하는 라디오 버튼등의 형식으로 바꿀 것이며 최종적으로는 별점의 형태로 rank값을 입력받고 싶다.
 
-  Review에서 rank를 입력받을때 현재는 사용자가 직접 int값을 입력하는 형태를 하고있지만 1차적으로 1~10까지의 점수를 사용자가 선택하는 라디오 버튼등의 형식으로 바꿀 것이며 최종적으로는 별점의 형태로 rank값을 입력받고 싶다.
+- 선언만 해두고 아직 구현하지 못한 update_review와 delete_comment 기능을 우선적으로 추가해줘야 한다. 이후에는 아직 선언도 하지 않은 movie의 삭제, 수정을 views에 구현한다.
 
-  #### views.py
-
-  선언만 해두고 아직 구현하지 못한 update_review와 delete_comment 기능을 우선적으로 추가해줘야 한다. 이후에는 아직 선언도 하지 않은 movie의 삭제, 수정을 views에 구현한다.
-
-  #### templates
-
-  보완 및 추가해야할점의 대부분이 templates에 몰려있다. 일단 bootstrap으로 기본적인 구색만 갖춰놓은 각 탬플릿들의 비쥬얼적인 부분을 전면적으로 수정해야한다. 또한 base.html에 accounts의 index기능을 하는 navbar를 추가하고 index.html에 있는 영화 리스트를 carousel로 변경하여 사이트 전체의 완성 확 끌어올릴 예정이다.(수일 내 추가작업 예정)
-
+- 보완 및 추가해야할점의 대부분이 templates에 몰려있다. 일단 bootstrap으로 기본적인 구색만 갖춰놓은 각 탬플릿들의 비쥬얼적인 부분을 전면적으로 수정해야한다. 또한 base.html에 accounts의 index기능을 하는 navbar를 추가하고 index.html에 있는 영화 리스트를 carousel로 변경하여 사이트 전체의 완성 확 끌어올릴 예정이다.(수일 내 추가작업 예정)
