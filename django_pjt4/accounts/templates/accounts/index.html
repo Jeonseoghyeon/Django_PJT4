@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+{% block body %}
+
+{% if user.is_authenticated %}
+    <h1>{{user.username}}님 하이요!</h1>
+{% endif %}
+
+<a href='{% url 'accounts:signup' %}'>signup</a>
+<a href='{% url 'accounts:logout' %}'>logout</a>
+<a href='{% url 'accounts:login' %}'>login</a>
+
+{% endblock %}

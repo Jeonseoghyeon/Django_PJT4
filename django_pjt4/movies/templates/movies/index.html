@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block body %}
+    <h1>index.html</h1>
+    {% for movie in movies %}
+
+        <a href="{% url 'movies:detail_movie' movie.id %}">{{movie.title}}</a>
+        <hr>
+    {% endfor %}
+    <a href="{% url 'movies:create_movie' %}" type="button" class="btn btn-primary">영화생성</a>
+{% endblock %}

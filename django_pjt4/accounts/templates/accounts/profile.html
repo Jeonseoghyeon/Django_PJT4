@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block body %}
+    <img src="{{ profile_user.profile_picture.url }}" class="w-25 rounded-circle">
+    <h1>{{profile_user.username}}님의 Profile</h1>
+    <h1><a>{{profile_user.followers.all|length}}명</a>이 팔로우 합니다.</h1>
+    {% if user.is_authenticated %}
+        {% if user != profile_user %}
+            {% if user in profile_user.followers.all %}
+                <a href='{% url 'accounts:follow' profile_user.username %}'>팔로우 취소</a>
+            {% else %}
+                <a href='{% url 'accounts:follow' profile_user.username %}'>팔로우</a>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+{% endblock %}
