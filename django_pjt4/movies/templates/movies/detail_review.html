@@ -9,13 +9,14 @@
     {% else %}
         <a href="{% url 'movies:like_review' review.id %}">좋아요</a>
     {% endif %}
+    <br>
     <a href="{% url 'movies:update_review' review.id %}">리뷰 수정</a>
     <p>{{review.content}}</p>
 
     <form action="{% url 'movies:delete_review' review.id %}" method = "POST">
         {% csrf_token %}
         {% if user == review.user %}
-            <input type="submit" value="삭제">
+            {% bootstrap_button "리뷰 삭제" button_type="submit" button_class="btn-danger" %}
         {% endif %}
     </form>
 
