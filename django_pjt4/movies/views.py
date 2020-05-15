@@ -71,9 +71,31 @@ def detail_review(request, review_id):
     return render(request, 'movies/detail_review.html', context)
 
 
-
+@login_required
 def update_review(request, review_id):
-    pass
+    review = get_object_or_404(Review, id=review_id)
+    print(1)
+    if request.user == review.user:
+        print(2)
+        form = ReviewForm(instance=review)
+        print(3)
+        if request.method == "POST":
+            print(4)
+            form = ReviewForm(request.POST)
+            if form.is_valid():
+                print(5)
+                new_review = form.save(commit=False)
+                review.title = new_review.title
+                review.content = new_review.content
+                review.rank = new_review.rank
+                review.save()
+                return redirect('movies:detail_review', review_id)
+        context = {
+            'form': form,
+        }
+        print(6)
+        return render(request, 'movies/form.html', context)
+    return redirect('movies:detail_review', review_id)
 
 @login_required
 @require_POST
@@ -88,8 +110,12 @@ def create_comment(request, review_id):
             comment.save()
     return redirect('movies:detail_review', review_id)
 
-def delete_comment(request):
-    pass
+@login_required
+def delete_comment(request, comment_id, review_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+    if request.user == comment.user:
+        comment.delete()
+    return redirect('movies:detail_review', review_id)
 
 @login_required
 def like_review(request, review_id):

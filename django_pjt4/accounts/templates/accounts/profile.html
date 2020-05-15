@@ -1,7 +1,20 @@
-{% extends 'base.html' %}
 {% load static %}
-{% block body %}
-    <img src="{{ profile_user.profile_picture.url }}" class="w-25 rounded-circle">
+{% load bootstrap4 %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    {% if request.user == profile_user %}
+        <a href='{% url 'accounts:profile_picture_update' profile_user.username %}'><img src="{{ profile_user.profile_picture.url }}" class="w-25 rounded-circle"></a>
+    {% else %}
+        <img src="{{ profile_user.profile_picture.url }}" class="w-25 rounded-circle">
+    {% endif %}
+
     <h1>{{profile_user.username}}님의 Profile</h1>
     <h1><a>{{profile_user.followers.all|length}}명</a>이 팔로우 합니다.</h1>
     {% if user.is_authenticated %}
@@ -13,4 +26,8 @@
             {% endif %}
         {% endif %}
     {% endif %}
-{% endblock %}
+    {% bootstrap_javascript jquery='full' %}
+    {% bootstrap_css %}
+</body>
+</html>
+

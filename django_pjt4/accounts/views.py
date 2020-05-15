@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, UpdateProfileForm
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.forms import UserCreationForm
@@ -33,7 +33,7 @@ def login(request):
         form = AuthenticationForm(request,request.POST)
         if form.is_valid():
             auth_login(request,form.get_user())
-            return redirect(request.GET.get('next') or 'accounts:index')
+            return redirect(request.GET.get('next') or 'movies:index')
     else:
         form = AuthenticationForm()
     context = {
@@ -44,7 +44,7 @@ def login(request):
 
 def logout(request):
     auth_logout(request)
-    return redirect('accounts:index')
+    return redirect('movies:index')
 
 @login_required
 def profile(request,username):
@@ -71,3 +71,23 @@ def follow(request,username):
         you.followers.add(me)
 
     return redirect('accounts:profile', username)
+
+def profile_picture_update(request,username):
+    user=get_object_or_404(get_user_model() ,username=username)
+    if request.method == 'POST':
+        form = UpdateProfileForm(request.POST,request.FILES)
+        if form.is_valid():
+            # user.profile_picture = form.profile_picture
+            # user.save()
+            new_user = form.save(commit=False)
+            user.profile_picture = new_user.profile_picture
+            user.save()
+            return redirect('accounts:profile',username)
+    else:
+        form = UpdateProfileForm(instance=user)
+
+    context = {
+        'form':form
+    }
+    return render(request,'accounts/form.html',context)
+

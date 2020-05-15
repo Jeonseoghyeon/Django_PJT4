@@ -9,6 +9,7 @@
     {% else %}
         <a href="{% url 'movies:like_review' review.id %}">좋아요</a>
     {% endif %}
+    <a href="{% url 'movies:update_review' review.id %}">리뷰 수정</a>
     <p>{{review.content}}</p>
 
     <form action="{% url 'movies:delete_review' review.id %}" method = "POST">
@@ -19,7 +20,9 @@
     </form>
 
     {% for comment in review.comments.all %}
-        <h4>{{ comment.content }}</h4>
+        <p class="h4 d-inline">{{ comment.content }}</p>
+        <a href="{% url 'movies:delete_comment' comment.id review.id %}" class="ml-5">삭제</a>
+        <br>
     {% endfor %}
     <form action="{% url 'movies:create_comment' review.id %}" method="POST">
         {% csrf_token%}
